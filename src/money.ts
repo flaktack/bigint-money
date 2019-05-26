@@ -11,11 +11,11 @@ import {
 
 export class Money {
 
-  currency: string;
+  currency: string | null;
   private value: bigint;
   private round: Round;
 
-  constructor(value: number | bigint | string, currency: string, round: Round = Round.HALF_TO_EVEN) {
+  constructor(value: number | bigint | string, currency: string | null, round: Round = Round.HALF_TO_EVEN) {
 
     this.currency = currency;
     this.round = round;
