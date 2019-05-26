@@ -8,7 +8,7 @@ export const PRECISION_I = 20;
 export const PRECISION = BigInt(PRECISION_I);
 
 // Multiplication factor for internal values
-export const PRECISION_M = 10n ** PRECISION;
+export const PRECISION_M = BigInt('10') ** PRECISION;
 
 export enum Round {
 
@@ -53,7 +53,7 @@ export function moneyValueToBigInt(input: Money | string | number | bigint, roun
       // The whole part
       if (wholePart === undefined) {
         // For numbers like ".04" this part will be undefined.
-        output = 0n;
+        output = BigInt('0');
       } else {
         output = BigInt(wholePart) * PRECISION_M;
       }
@@ -64,16 +64,16 @@ export function moneyValueToBigInt(input: Money | string | number | bigint, roun
 
         if (precisionDifference >= 0) {
           // Add 0's
-          output += BigInt(fracPart) * 10n ** precisionDifference;
+          output += BigInt(fracPart) * BigInt('10') ** precisionDifference;
         } else {
           // Remove 0's
-          output += divide(BigInt(fracPart), 10n ** (-precisionDifference), round);
+          output += divide(BigInt(fracPart), BigInt('10') ** (-precisionDifference), round);
         }
       }
 
       // negative ?
       if (signPart === '-') {
-        output *= -1n;
+        output *= -BigInt('1');
       }
       return output;
     case 'bigint':
@@ -112,20 +112,20 @@ export function bigintToFixed(value: bigint, precision: number, round: Round) {
   if (precision > PRECISION) {
     // More precision was requested than we have, so we multiply
     // to add more 0's
-    remainder *= 10n ** (BigInt(precision) - PRECISION);
+    remainder *= BigInt('10') ** (BigInt(precision) - PRECISION);
   } else {
     // Less precision was requested, so we round
-    remainder = divide(remainder, 10n ** (PRECISION - BigInt(precision)), round);
+    remainder = divide(remainder, BigInt('10') ** (PRECISION - BigInt(precision)), round);
   }
 
-  if (remainder < 0) { remainder *= -1n; }
+  if (remainder < 0) { remainder *= -BigInt('1'); }
 
   let remainderStr = remainder.toString().padStart(precision, '0');
 
   if (remainderStr.length > precision) {
     // The remainder rounded all the way up to the the 'whole part'
-    wholePart += negative ? -1n : 1n;
-    remainder = 0n;
+    wholePart += negative ? -BigInt('1') : BigInt('1');
+    remainder = BigInt('0');
     remainderStr = '0'.repeat(precision);
   }
 
@@ -141,7 +141,7 @@ export function bigintToFixed(value: bigint, precision: number, round: Round) {
  * This function takes 2 bigints and divides them.
  *
  * By default ecmascript will round to 0. For example,
- * 5n / 2n yields 2n.
+ * BigInt('5') / BigInt('2') yields BigInt('2').
  *
  * This function rounds to the nearest even number, also
  * known as 'bankers rounding'.
@@ -156,7 +156,7 @@ export function divide(a: bigint, b: bigint, round: Round) {
   const rem = aAbs % bAbs;
 
   // if remainder > half divisor
-  if (rem * 2n > bAbs) {
+  if (rem * BigInt('2') > bAbs) {
     switch (round) {
       case Round.TRUNCATE:
         // do nothing
@@ -166,14 +166,14 @@ export function divide(a: bigint, b: bigint, round: Round) {
         result++;
         break;
     }
-  } else if (rem * 2n === bAbs) {
+  } else if (rem * BigInt('2') === bAbs) {
     // If the remainder is exactly half the divisor, it means that the result is
     // exactly in between two numbers and we need to apply a specific rounding
     // method.
     switch (round) {
       case Round.HALF_TO_EVEN:
         // Add 1 if result is odd to get an even return value
-        if (result % 2n === 1n) { result++; }
+        if (result % BigInt('2') === BigInt('1')) { result++; }
         break;
       case Round.HALF_AWAY_FROM_0:
         result++;
